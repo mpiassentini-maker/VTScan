@@ -26,8 +26,17 @@ de VirusTotal detectan el archivo como amenaza:
 | 🟡 **Precaución** | pocas detecciones (revisá cuáles antes de confiar) |
 | 🔴 **PELIGRO** | varias detecciones — no lo ejecutes hasta investigar |
 
-<!-- Cuando agregues tu captura en docs/screenshot.png se va a ver acá: -->
-![Captura de VTScan en acción](docs/screenshot.png)
+## Así se ve
+
+Click derecho sobre cualquier ejecutable → **Analizar con VirusTotal**:
+
+![Menú contextual de VTScan](docs/menu-contextual.png)
+
+En segundos, una notificación con el semáforo:
+
+| 🟢 Limpio (0/70) | 🟡 Precaución (2/68) |
+|:---:|:---:|
+| ![Resultado limpio](docs/notif-limpio.jpg) | ![Resultado precaución](docs/notif-precaucion.jpg) |
 
 ## ¿Por qué es distinto?
 
@@ -85,6 +94,12 @@ emuladores, herramientas viejas) suele dar **falsos positivos**.
   `ML.Attribute...`), casi siempre es ruido.
 - 🔴 **5+**, sobre todo si coinciden pesos pesados (Microsoft, Kaspersky, ESET,
   BitDefender) → no lo ejecutes hasta investigar bien.
+
+El botón **"Ver en VirusTotal"** abre el reporte completo: qué motores lo marcan,
+con qué nombre y por qué. En este ejemplo, el 2/68 eran detecciones heurísticas
+(`FileRepMalware`) de antivirus menores — el patrón típico de un falso positivo:
+
+![Reporte detallado en VirusTotal](docs/reporte-virustotal.jpg)
 
 > VTScan **no reemplaza a un antivirus**. Es una segunda opinión rápida antes de
 > ejecutar algo.
