@@ -1,0 +1,5 @@
+# Normaliza los fin de linea: evita ruido entre Windows y otros sistemas
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf

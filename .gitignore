@@ -1,0 +1,4 @@
+# La config real (con tu API Key) NUNCA va al repo.
+# Vive en %APPDATA%\VTScan\config.json, pero por las dudas:
+config.json
+*.local.json
