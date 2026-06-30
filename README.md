@@ -81,7 +81,11 @@ Now right-click any executable → **Scan with VirusTotal**.
 
 ## Command Center
 
-`VTScan-CommandCenter.ps1` is the settings UI. It lets you:
+`VTScan-CommandCenter.ps1` is the settings UI:
+
+![VTScan Command Center](docs/command-center.jpg)
+
+It lets you:
 
 - Load / change the **API Key**.
 - Pick the **language** (Auto / Español / English).

@@ -78,7 +78,11 @@ Ahora, botón derecho sobre cualquier ejecutable → **Analizar con VirusTotal**
 
 ## Centro de Mando
 
-`VTScan-CommandCenter.ps1` es la interfaz de configuración. Te deja:
+`VTScan-CommandCenter.ps1` es la interfaz de configuración:
+
+![Centro de Mando de VTScan](docs/command-center.jpg)
+
+Te deja:
 
 - Cargar / cambiar la **API Key**.
 - Elegir el **idioma** (Auto / Español / English).
