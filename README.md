@@ -1,147 +1,159 @@
 # VTScan
 
-> Chequeá cualquier archivo descargado con **VirusTotal** desde el menú contextual de Windows. Click derecho → semáforo 🟢🟡🔴 en una notificación. Sin abrir el navegador, sin subir tu archivo.
+🌐 **English** · [Español](README.es.md)
 
-![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6?logo=windows)
-![PowerShell](https://img.shields.io/badge/hecho%20con-PowerShell-5391FE?logo=powershell&logoColor=white)
-![Licencia](https://img.shields.io/badge/licencia-MIT-green)
-![Sin admin](https://img.shields.io/badge/instalaci%C3%B3n-sin%20admin-success)
+> Check any downloaded file with **VirusTotal** right from the Windows context menu. Right-click → a 🟢🟡🔴 traffic-light notification. No browser, no uploading your file.
+
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
+![PowerShell](https://img.shields.io/badge/made%20with-PowerShell-5391FE?logo=powershell&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+![No admin](https://img.shields.io/badge/install-no%20admin-success)
+![Languages](https://img.shields.io/badge/languages-EN%20%7C%20ES-blueviolet)
 
 ---
 
-## ¿Qué es?
+## What is it?
 
-Bajaste un `.exe`, un `.msi`, un instalador de cualquier lado y antes de hacer
-doble click querés una segunda opinión rápida. **VTScan** agrega una opción al
-menú contextual de Windows:
+You downloaded an `.exe`, an `.msi`, an installer from somewhere, and before
+double-clicking you want a quick second opinion. **VTScan** adds an option to the
+Windows context menu:
 
-> 🛡️ **Analizar con VirusTotal**
+> 🛡️ **Scan with VirusTotal**
 
-Te devuelve, en una notificación con color, cuántos de los ~70 motores antivirus
-de VirusTotal detectan el archivo como amenaza:
+It tells you, in a colored notification, how many of VirusTotal's ~70 antivirus
+engines flag the file as a threat:
 
-| Color | Significado |
+| Color | Meaning |
 |:---:|---|
-| 🟢 **Limpio** | 0 detecciones |
-| 🟡 **Precaución** | pocas detecciones (revisá cuáles antes de confiar) |
-| 🔴 **PELIGRO** | varias detecciones — no lo ejecutes hasta investigar |
+| 🟢 **Clean** | 0 detections |
+| 🟡 **Caution** | a few detections (check which ones before trusting it) |
+| 🔴 **DANGER** | several detections — don't run it until you investigate |
 
-## Así se ve
+## How it looks
 
-Click derecho sobre cualquier ejecutable → **Analizar con VirusTotal**:
+Right-click any executable → **Scan with VirusTotal**:
 
-![Menú contextual de VTScan](docs/menu-contextual.png)
+![VTScan context menu](docs/menu-contextual.png)
 
-En segundos, una notificación con el semáforo:
+In seconds, a traffic-light notification:
 
-| 🟢 Limpio (0/70) | 🟡 Precaución (2/68) |
+| 🟢 Clean (0/70) | 🟡 Caution (2/68) |
 |:---:|:---:|
-| ![Resultado limpio](docs/notif-limpio.jpg) | ![Resultado precaución](docs/notif-precaucion.jpg) |
+| ![Clean result](docs/notif-limpio.jpg) | ![Caution result](docs/notif-precaucion.jpg) |
 
-## ¿Por qué es distinto?
+> The screenshots show the Spanish UI; the app is bilingual and follows your
+> Windows language (or your manual choice).
 
-- **No sube tu archivo.** Calcula el hash **SHA-256** localmente y le pregunta a
-  VirusTotal si ya tiene un reporte de ese hash. Es instantáneo, privado y no
-  gasta tu cuota subiendo nada. (La subida de archivos desconocidos es opcional
-  y la activás vos.)
-- **No abre el navegador** para el chequeo rápido: la respuesta llega como una
-  notificación. Si querés el detalle, un botón te abre el reporte completo.
-- **Sin permisos de administrador.** Todo se instala en tu usuario (`HKCU`) y se
-  desinstala con un click.
-- **Tu API Key nunca queda en el repo.** Vive en `%APPDATA%\VTScan\config.json`,
-  fuera del código.
+## Why it's different
 
-## Requisitos
+- **It doesn't upload your file.** It computes the **SHA-256** hash locally and
+  asks VirusTotal whether it already has a report for that hash. Instant, private,
+  and it doesn't burn your quota uploading anything. (Uploading unknown files is
+  optional and you enable it yourself.)
+- **No browser** for the quick check: the answer arrives as a notification. Want
+  the details? One button opens the full report.
+- **No administrator rights.** Everything installs under your user (`HKCU`) and
+  uninstalls with one click.
+- **Bilingual (English / Spanish).** The UI follows your Windows language, or you
+  pick it by hand in the Command Center.
+- **Your API Key never lands in the repo.** It lives in
+  `%APPDATA%\VTScan\config.json`, outside the code.
 
-- Windows 10 / 11 (PowerShell viene de fábrica).
-- Una **API Key gratuita** de VirusTotal:
-  registrate en [virustotal.com](https://www.virustotal.com), entrá a tu perfil
-  → **API Key**. No pide tarjeta. El plan free da ~4 consultas/min y 500/día,
-  de sobra para uso personal.
+## Requirements
 
-## Instalación
+- Windows 10 / 11 (PowerShell is built in).
+- A **free VirusTotal API Key**: sign up at
+  [virustotal.com](https://www.virustotal.com), go to your profile → **API Key**.
+  No card required. The free tier gives ~4 lookups/min and 500/day — plenty for
+  personal use.
 
-1. Descargá este repositorio
-   (botón verde **Code → Download ZIP**, o `git clone`).
-2. Click derecho en **`VTScan-CommandCenter.ps1`** → *Ejecutar con PowerShell*.
-   > Si Windows lo bloquea, abrí PowerShell en la carpeta y corré:
+## Install
+
+1. Download this repository
+   (green **Code → Download ZIP** button, or `git clone`).
+2. Right-click **`VTScan-CommandCenter.ps1`** → *Run with PowerShell*.
+   > If Windows blocks it, open PowerShell in the folder and run:
    > `powershell -ExecutionPolicy Bypass -File .\VTScan-CommandCenter.ps1`
-3. Pegá tu **API Key** → **Guardar**.
-4. **Instalar menú**. ¡Listo!
+3. Paste your **API Key** → **Save**.
+4. **Install menu**. Done!
 
-Ahora, botón derecho sobre cualquier ejecutable → **Analizar con VirusTotal**.
+Now right-click any executable → **Scan with VirusTotal**.
 
-## Centro de Mando
+## Command Center
 
-`VTScan-CommandCenter.ps1` es la interfaz de configuración. Te deja:
+`VTScan-CommandCenter.ps1` is the settings UI. It lets you:
 
-- Cargar / cambiar la **API Key**.
-- Ajustar los **umbrales** (desde cuántas detecciones es 🟡 o 🔴).
-- Elegir **qué extensiones** aparecen en el menú (`.exe`, `.dll`, `.msi`, `.sys`,
-  `.bat`, `.ps1`, `.cmd`, `.scr`, y más).
-- Activar la **subida automática** de archivos que VT no conoce (<32 MB).
-- **Probar un archivo** al instante, sin instalar nada.
-- **Instalar / quitar** el menú contextual.
+- Load / change the **API Key**.
+- Pick the **language** (Auto / Español / English).
+- Adjust the **thresholds** (how many detections turn it 🟡 or 🔴).
+- Choose **which extensions** appear in the menu (`.exe`, `.dll`, `.msi`, `.sys`,
+  `.bat`, `.ps1`, `.cmd`, `.scr`, and more).
+- Enable **automatic upload** of files VT doesn't know (<32 MB).
+- **Test a file** instantly, without installing anything.
+- **Install / remove** the context menu.
 
-## ¿Cómo leer el resultado?
+> After changing the language, reopen the Command Center to see it applied and
+> click **Install menu** again to refresh the context-menu label.
 
-Un número bajo no siempre es malware: el software de nicho (mods de juegos,
-emuladores, herramientas viejas) suele dar **falsos positivos**.
+## How to read the result
 
-- 🟢 **0** → tranquilo.
-- 🟡 **1–4** → mirá *qué* motores lo marcan con el botón "Ver en VirusTotal".
-  Si son antivirus menores con nombres genéricos (`Trojan.Generic`,
-  `ML.Attribute...`), casi siempre es ruido.
-- 🔴 **5+**, sobre todo si coinciden pesos pesados (Microsoft, Kaspersky, ESET,
-  BitDefender) → no lo ejecutes hasta investigar bien.
+A low number isn't always malware: niche software (game mods, emulators, old
+tools) often triggers **false positives**.
 
-El botón **"Ver en VirusTotal"** abre el reporte completo: qué motores lo marcan,
-con qué nombre y por qué. En este ejemplo, el 2/68 eran detecciones heurísticas
-(`FileRepMalware`) de antivirus menores — el patrón típico de un falso positivo:
+- 🟢 **0** → you're good.
+- 🟡 **1–4** → check *which* engines flag it via the "View on VirusTotal" button.
+  If they're minor antivirus with generic names (`Trojan.Generic`,
+  `ML.Attribute...`), it's almost always noise.
+- 🔴 **5+**, especially if heavyweights agree (Microsoft, Kaspersky, ESET,
+  BitDefender) → don't run it until you investigate.
 
-![Reporte detallado en VirusTotal](docs/reporte-virustotal.jpg)
+The **"View on VirusTotal"** button opens the full report: which engines flag it,
+under what name, and why. In this example, the 2/68 were heuristic detections
+(`FileRepMalware`) from minor antivirus — the textbook false-positive pattern:
 
-> VTScan **no reemplaza a un antivirus**. Es una segunda opinión rápida antes de
-> ejecutar algo.
+![Detailed VirusTotal report](docs/reporte-virustotal.jpg)
 
-## ¿Cómo funciona por dentro?
+> VTScan **is not a replacement for an antivirus**. It's a quick second opinion
+> before you run something.
+
+## How it works inside
 
 ```
-Click derecho → "Analizar con VirusTotal"
+Right-click → "Scan with VirusTotal"
         │
         ▼
-  SHA-256 del archivo (local, no se sube nada)
+  SHA-256 of the file (local, nothing is uploaded)
         │
         ▼
   GET api/v3/files/{hash}  ──►  VirusTotal
         │
    ┌────┴─────────────┐
    ▼                  ▼
- conocido         404 (desconocido)
+ known            404 (unknown)
    │                  │
- semáforo       opcional: subir <32MB
+ traffic light   optional: upload <32MB
                        │
-                 poll del análisis
+                 poll the analysis
                        │
-                  ▼  semáforo
+                  ▼  traffic light
 ```
 
-## Estructura del proyecto
+## Project structure
 
-| Archivo | Qué hace |
+| File | What it does |
 |---|---|
-| `VTScan.Core.ps1` | Motor: config, hash, consulta a VT, popup, registro del menú. |
-| `VTScan.ps1` | Punto de entrada que dispara el menú contextual. |
-| `VTScan-CommandCenter.ps1` | Interfaz gráfica de configuración. |
-| `config.example.json` | Ejemplo de configuración. |
+| `VTScan.Core.ps1` | Engine: config, languages, hash, VT lookup, popup, menu registration. |
+| `VTScan.ps1` | Entry point fired by the context menu. |
+| `VTScan-CommandCenter.ps1` | Graphical settings UI. |
+| `config.example.json` | Example configuration. |
 
-## Privacidad y seguridad
+## Privacy & security
 
-- Tu API Key se guarda en `%APPDATA%\VTScan\config.json`, **nunca** en el repo
-  (el `.gitignore` ya lo cubre).
-- En el chequeo por hash **no se transmite el archivo**, sólo su huella SHA-256.
-- El código es PowerShell plano: podés leer exactamente qué hace.
+- Your API Key is stored in `%APPDATA%\VTScan\config.json`, **never** in the repo
+  (`.gitignore` already covers it).
+- The hash lookup **does not transmit the file**, only its SHA-256 fingerprint.
+- The code is plain PowerShell: you can read exactly what it does.
 
-## Licencia
+## License
 
-[MIT](LICENSE) — usalo, modificalo y compartilo libremente.
+[MIT](LICENSE) — use it, modify it and share it freely.

@@ -1,6 +1,7 @@
 # =====================================================================
 #  VTScan.Core.ps1  -  Motor compartido (config, consulta VT, popup, menu)
-#  No ejecutar directo. Lo usan VTScan.ps1 y VTScan-CommandCenter.ps1
+#  Shared engine (config, VT lookup, popup, context menu)
+#  No ejecutar directo / Don't run directly. Usado por VTScan.ps1 y el Centro de Mando.
 # =====================================================================
 
 Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
@@ -16,6 +17,7 @@ $script:VTKnownExtensions = @('.exe','.dll','.msi','.sys','.bat','.ps1','.cmd','
 function Get-VTDefaultConfig {
     [pscustomobject]@{
         ApiKey              = ''
+        Language            = 'auto'  # 'auto' (idioma de Windows) | 'es' | 'en'
         Extensions          = @('.exe','.dll','.msi','.sys','.bat','.ps1','.cmd','.scr')
         YellowThreshold     = 1     # >= este nro de detecciones -> amarillo
         RedThreshold        = 5     # >= este nro de detecciones -> rojo
@@ -52,12 +54,112 @@ function Save-VTConfig {
 }
 
 # ---------------------------------------------------------------------
+#  i18n - idioma + tabla de textos / language + strings table
+# ---------------------------------------------------------------------
+function Resolve-VTLang {
+    param($Config)
+    $lang = if ($Config) { [string]$Config.Language } else { 'auto' }
+    if ([string]::IsNullOrWhiteSpace($lang) -or $lang -eq 'auto') {
+        $ui = [System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName
+        $lang = if ($ui -eq 'es') { 'es' } else { 'en' }
+    }
+    if ($lang -ne 'es' -and $lang -ne 'en') { $lang = 'en' }
+    return $lang
+}
+
+function Get-VTStrings {
+    param([string]$Lang = 'en')
+    $es = @{
+        menu_label        = 'Analizar con VirusTotal'
+        # Popup
+        t_clean='Limpio'; t_caution='Precaucion'; t_danger='PELIGRO'
+        t_unknown='Desconocido'; t_error='Error'; t_setup='Falta configurar'
+        btn_view='Ver en VirusTotal'; btn_close='Cerrar'
+        msg_nokey='No hay API Key. Abri el Centro de Mando y carga tu clave.'
+        msg_nofile='El archivo no existe.'
+        msg_readfail='No se pudo leer el archivo: {0}'
+        msg_detect='{0}/{1} motores detectan amenaza'
+        msg_susp='  ({0} sospechosos)'
+        msg_unknown='VirusTotal no conoce este archivo todavia.'
+        msg_uploaded='(recien subido) {0}/{1} detectan amenaza'
+        msg_uploading='Subido a VT. El analisis sigue en curso, abri el link en un minuto.'
+        msg_401='API Key invalida (401). Revisala en el Centro de Mando.'
+        msg_429='Limite de la API alcanzado (429). Espera ~1 minuto.'
+        msg_neterr='Error de red: {0}'
+        # Centro de Mando
+        cc_title='VTScan - Centro de Mando'
+        cc_subtitle='Chequeo rapido de archivos con VirusTotal'
+        cc_apikey='API Key de VirusTotal'
+        cc_apikey_hint='(virustotal.com -> tu perfil -> API Key. Gratis, sin tarjeta.)'
+        cc_show='Ver'
+        cc_language='Idioma / Language'
+        cc_thresholds='Umbrales de detecciones'
+        cc_yellow_from='Amarillo desde:'
+        cc_red_from='Rojo desde:'
+        cc_autoupload='Subir a VT los archivos que no conoce (<32MB, mas lento)'
+        cc_extensions='Extensiones a vigilar (menu contextual)'
+        cc_state_on='Menu contextual: INSTALADO'
+        cc_state_off='Menu contextual: no instalado'
+        cc_save='Guardar'; cc_install='Instalar menu'; cc_uninstall='Quitar menu'
+        cc_test='Probar un archivo...'
+        cc_saved='Configuracion guardada.'
+        cc_needkey='Carga primero la API Key.'
+        cc_installed='Listo. Boton derecho sobre un .exe/.msi/etc -> "Analizar con VirusTotal".'
+        cc_uninstalled='Menu contextual quitado.'
+        cc_pickfile='Elegi un archivo para analizar'
+        cc_langchanged='Idioma guardado. Reabri el Centro de Mando para verlo aplicado. Si tenias el menu instalado, toca "Instalar menu" otra vez para actualizar el texto.'
+    }
+    $en = @{
+        menu_label        = 'Scan with VirusTotal'
+        # Popup
+        t_clean='Clean'; t_caution='Caution'; t_danger='DANGER'
+        t_unknown='Unknown'; t_error='Error'; t_setup='Setup needed'
+        btn_view='View on VirusTotal'; btn_close='Close'
+        msg_nokey='No API Key set. Open the Command Center and add your key.'
+        msg_nofile='The file does not exist.'
+        msg_readfail='Could not read the file: {0}'
+        msg_detect='{0}/{1} engines flag this file'
+        msg_susp='  ({0} suspicious)'
+        msg_unknown='VirusTotal has not seen this file yet.'
+        msg_uploaded='(just uploaded) {0}/{1} engines flag this file'
+        msg_uploading='Uploaded to VT. Analysis still running, open the link in a minute.'
+        msg_401='Invalid API Key (401). Check it in the Command Center.'
+        msg_429='API rate limit reached (429). Wait ~1 minute.'
+        msg_neterr='Network error: {0}'
+        # Command Center
+        cc_title='VTScan - Command Center'
+        cc_subtitle='Quick file checks with VirusTotal'
+        cc_apikey='VirusTotal API Key'
+        cc_apikey_hint='(virustotal.com -> your profile -> API Key. Free, no card.)'
+        cc_show='Show'
+        cc_language='Language / Idioma'
+        cc_thresholds='Detection thresholds'
+        cc_yellow_from='Yellow from:'
+        cc_red_from='Red from:'
+        cc_autoupload='Upload unknown files to VT (<32MB, slower)'
+        cc_extensions='Extensions to watch (context menu)'
+        cc_state_on='Context menu: INSTALLED'
+        cc_state_off='Context menu: not installed'
+        cc_save='Save'; cc_install='Install menu'; cc_uninstall='Remove menu'
+        cc_test='Test a file...'
+        cc_saved='Settings saved.'
+        cc_needkey='Enter the API Key first.'
+        cc_installed='Done. Right-click an .exe/.msi/etc -> "Scan with VirusTotal".'
+        cc_uninstalled='Context menu removed.'
+        cc_pickfile='Pick a file to analyze'
+        cc_langchanged='Language saved. Reopen the Command Center to see it applied. If the menu was installed, click "Install menu" again to update its label.'
+    }
+    if ($Lang -eq 'es') { return $es } else { return $en }
+}
+
+# ---------------------------------------------------------------------
 #  Consulta principal: hash local -> reporte en VirusTotal (sin subir)
 # ---------------------------------------------------------------------
 function Invoke-VTLookup {
     param([Parameter(Mandatory)][string]$FilePath)
 
     $cfg = Get-VTConfig
+    $s   = Get-VTStrings (Resolve-VTLang $cfg)
     $r = [ordered]@{
         FilePath = $FilePath
         FileName = (Split-Path $FilePath -Leaf)
@@ -72,11 +174,11 @@ function Invoke-VTLookup {
 
     if ([string]::IsNullOrWhiteSpace($cfg.ApiKey)) {
         $r.Status = 'nokey'
-        $r.Message = 'No hay API Key. Abri el Centro de Mando y carga tu clave.'
+        $r.Message = $s.msg_nokey
         return [pscustomobject]$r
     }
     if (-not (Test-Path -LiteralPath $FilePath)) {
-        $r.Status = 'error'; $r.Message = 'El archivo no existe.'
+        $r.Status = 'error'; $r.Message = $s.msg_nofile
         return [pscustomobject]$r
     }
 
@@ -86,7 +188,7 @@ function Invoke-VTLookup {
     try {
         $hash = (Get-FileHash -LiteralPath $FilePath -Algorithm SHA256).Hash.ToLower()
     } catch {
-        $r.Status = 'error'; $r.Message = "No se pudo leer el archivo: $($_.Exception.Message)"
+        $r.Status = 'error'; $r.Message = ($s.msg_readfail -f $_.Exception.Message)
         return [pscustomobject]$r
     }
     $r.Hash = $hash
@@ -106,8 +208,8 @@ function Invoke-VTLookup {
         if     ($flag -ge $cfg.RedThreshold)    { $r.Status = 'red' }
         elseif ($flag -ge $cfg.YellowThreshold) { $r.Status = 'yellow' }
         else                                    { $r.Status = 'green' }
-        $r.Message = "$mal/$tot motores detectan amenaza"
-        if ($sus -gt 0) { $r.Message += "  ($sus sospechosos)" }
+        $r.Message = ($s.msg_detect -f $mal, $tot)
+        if ($sus -gt 0) { $r.Message += ($s.msg_susp -f $sus) }
     }
     catch {
         $code = $null
@@ -122,21 +224,21 @@ function Invoke-VTLookup {
                         if     ($flag -ge $cfg.RedThreshold)    { $r.Status = 'red' }
                         elseif ($flag -ge $cfg.YellowThreshold) { $r.Status = 'yellow' }
                         else                                    { $r.Status = 'green' }
-                        $r.Message = "(recien subido) $($up.Malicious)/$($up.Total) detectan amenaza"
+                        $r.Message = ($s.msg_uploaded -f $up.Malicious, $up.Total)
                     } else {
                         $r.Status = 'unknown'
-                        $r.Message = 'Subido a VT. El analisis sigue en curso, abri el link en un minuto.'
+                        $r.Message = $s.msg_uploading
                     }
                 } else {
                     $r.Status = 'unknown'
-                    $r.Message = 'VirusTotal no conoce este archivo todavia.'
+                    $r.Message = $s.msg_unknown
                 }
             }
-            401 { $r.Status = 'error'; $r.Message = 'API Key invalida (401). Revisala en el Centro de Mando.' }
-            429 { $r.Status = 'error'; $r.Message = 'Limite de la API alcanzado (429). Espera ~1 minuto.' }
+            401 { $r.Status = 'error'; $r.Message = $s.msg_401 }
+            429 { $r.Status = 'error'; $r.Message = $s.msg_429 }
             default {
                 $r.Status = 'error'
-                $r.Message = "Error de red: $($_.Exception.Message)"
+                $r.Message = ($s.msg_neterr -f $_.Exception.Message)
             }
         }
     }
@@ -172,11 +274,11 @@ function Invoke-VTUpload {
             $a = Invoke-RestMethod -Uri "https://www.virustotal.com/api/v3/analyses/$analysisId" `
                                    -Headers @{ 'x-apikey'=$ApiKey } -Method Get -ErrorAction Stop
             if ($a.data.attributes.status -eq 'completed') {
-                $s = $a.data.attributes.stats
-                $out.Malicious  = [int]$s.malicious
-                $out.Suspicious = [int]$s.suspicious
-                $out.Total      = [int]$s.malicious + [int]$s.suspicious + [int]$s.undetected + `
-                                  [int]$s.harmless + [int]$s.timeout
+                $st = $a.data.attributes.stats
+                $out.Malicious  = [int]$st.malicious
+                $out.Suspicious = [int]$st.suspicious
+                $out.Total      = [int]$st.malicious + [int]$st.suspicious + [int]$st.undetected + `
+                                  [int]$st.harmless + [int]$st.timeout
                 $out.Completed  = $true
                 break
             }
@@ -191,6 +293,8 @@ function Invoke-VTUpload {
 function Show-VTResult {
     param([Parameter(Mandatory)]$Result, [int]$Seconds = 12)
 
+    $s = Get-VTStrings (Resolve-VTLang (Get-VTConfig))
+
     $accentMap = @{
         green   = [System.Drawing.Color]::FromArgb(46,160,67)
         yellow  = [System.Drawing.Color]::FromArgb(210,153,34)
@@ -200,8 +304,8 @@ function Show-VTResult {
         nokey   = [System.Drawing.Color]::FromArgb(67,109,177)
     }
     $titleMap = @{
-        green='Limpio'; yellow='Precaucion'; red='PELIGRO'
-        unknown='Desconocido'; error='Error'; nokey='Falta configurar'
+        green=$s.t_clean; yellow=$s.t_caution; red=$s.t_danger
+        unknown=$s.t_unknown; error=$s.t_error; nokey=$s.t_setup
     }
     $dotMap = @{ green='OK'; yellow='!'; red='X'; unknown='?'; error='!'; nokey='*' }
 
@@ -253,10 +357,10 @@ function Show-VTResult {
     $lblMsg.Size = New-Object System.Drawing.Size(362, 40)
     $form.Controls.Add($lblMsg)
 
-    # Boton: Ver en VirusTotal
+    # Boton: Ver en VirusTotal / View on VirusTotal
     if ($Result.Permalink) {
         $btnVT = New-Object System.Windows.Forms.Button
-        $btnVT.Text = 'Ver en VirusTotal'
+        $btnVT.Text = $s.btn_view
         $btnVT.FlatStyle = 'Flat'
         $btnVT.ForeColor = [System.Drawing.Color]::White
         $btnVT.BackColor = $accent
@@ -269,9 +373,9 @@ function Show-VTResult {
         $form.Controls.Add($btnVT)
     }
 
-    # Boton: Cerrar
+    # Boton: Cerrar / Close
     $btnClose = New-Object System.Windows.Forms.Button
-    $btnClose.Text = 'Cerrar'
+    $btnClose.Text = $s.btn_close
     $btnClose.FlatStyle = 'Flat'
     $btnClose.ForeColor = [System.Drawing.Color]::FromArgb(200,200,205)
     $btnClose.BackColor = [System.Drawing.Color]::FromArgb(48,48,54)
@@ -299,12 +403,13 @@ function Show-VTResult {
 # ---------------------------------------------------------------------
 function Install-VTContextMenu {
     $cfg   = Get-VTConfig
+    $s     = Get-VTStrings (Resolve-VTLang $cfg)
     $entry = Join-Path $PSScriptRoot 'VTScan.ps1'
     $pwsh  = Join-Path $PSHOME 'powershell.exe'
     foreach ($ext in @($cfg.Extensions)) {
         $base = "HKCU:\Software\Classes\SystemFileAssociations\$ext\shell\VTScan"
         New-Item -Path $base -Force | Out-Null
-        Set-ItemProperty -Path $base -Name '(default)' -Value 'Analizar con VirusTotal'
+        Set-ItemProperty -Path $base -Name '(default)' -Value $s.menu_label
         Set-ItemProperty -Path $base -Name 'Icon' -Value $pwsh
         $cmdKey = Join-Path $base 'command'
         New-Item -Path $cmdKey -Force | Out-Null

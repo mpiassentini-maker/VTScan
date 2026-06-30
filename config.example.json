@@ -1,5 +1,6 @@
 {
   "ApiKey": "PEGA-TU-API-KEY-ACA-O-MEJOR-USA-EL-CENTRO-DE-MANDO",
+  "Language": "auto",
   "Extensions": [".exe", ".dll", ".msi", ".sys", ".bat", ".ps1", ".cmd", ".scr"],
   "YellowThreshold": 1,
   "RedThreshold": 5,
